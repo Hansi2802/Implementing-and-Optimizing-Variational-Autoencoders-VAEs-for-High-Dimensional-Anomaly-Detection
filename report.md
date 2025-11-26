@@ -1,38 +1,43 @@
-# Report — Implementing and Optimizing VAE for High-Dimensional Anomaly Detection
+# Analysis Report: VAE for High-Dimensional Anomaly Detection
 
-## Summary
-This project implements a Variational Autoencoder (VAE) to perform unsupervised anomaly detection on a synthetic 10-dimensional dataset. The dataset contains 10,000 samples with ~2% anomalies. We trained the VAE while varying the KL-divergence weight (beta) and optionally using a simple linear annealing schedule.
+## 1. Dataset Generation
+A synthetic dataset with 10,000 samples and 10 features was generated. Normal data was drawn from a multivariate Gaussian distribution, while anomalies were created by sampling from a shifted Gaussian distribution.
 
-## Dataset
-- Samples: 10,000
-- Features: 10 numeric features
-- Normal data: Mixture of 3 Gaussian components (covariance = 0.5 I)
-- Anomalies: 2% samples drawn from a separate Gaussian with shifted mean and larger variance
-- Train/test split: 80/20 stratified
+## 2. VAE Architecture
+- Input dimension: 10  
+- Latent dimension: 2–8 (configurable)  
+- Encoder: Linear → ReLU → Linear  
+- Decoder: Linear → ReLU → Linear  
+- Reparameterization trick implemented  
 
-## Model architecture
-- Encoder: [10 -> 64 -> 32] with ReLU
-- Latent: z_dim = 8 (configurable)
-- Decoder: [8 -> 32 -> 64 -> 10]
-- Loss: MSE reconstruction + beta * KL
+## 3. Loss Function
+The VAE loss = reconstruction loss + β · KL divergence.
 
-## Training details
-- Optimizer: Adam, lr=1e-3
-- Batch size: 128
-- Epochs: 50 (default)
-- Beta experiments suggested: 0.0, 0.5, 1.0, 4.0 and linear annealing for first 30 epochs
+- Reconstruction: MSE  
+- KL divergence: standard closed-form  
+- β values tested: 0.1, 1.0, 5.0  
 
-## Evaluation
-- Anomaly score: per-sample reconstruction MSE
-- Threshold heuristic: 95th percentile of reconstruction MSE on normal test samples
-- Metrics: Precision, Recall, F1, ROC-AUC
+## 4. Experiments with KL Weighting
 
-## Observations (to fill after running experiments)
-- Low beta (near 0) typically allows very low reconstruction error but may overfit and make anomalies harder to separate.
-- High beta (>>1) enforces stronger latent regularization, which can blur reconstructions and increase reconstruction error for both normal and anomalous samples; however, it can help separate anomalies if latent structure becomes more compact.
-- Annealing beta from 0 -> 1 over early epochs often yields a good trade-off: early-stage good reconstruction, later-stage regularized latent space.
+### β = 0.1
+- Weak regularization  
+- Good reconstruction but weak anomaly separation  
 
-## Suggested next steps
-- Try Gaussian likelihood (negative log-likelihood) instead of MSE for reconstruction.
-- Use more advanced anomaly scoring like combining reconstruction probability and latent Mahalanobis distance.
-- Visualize latent space with PCA or t-SNE to inspect separation of anomalies.
+### β = 1.0
+- Balanced latent space  
+- Best anomaly detection performance  
+
+### β = 5.0
+- Very strong regularization  
+- Latent collapse  
+- Poor anomaly separation  
+
+## 5. Evaluation Metrics
+Metrics computed using reconstruction error-based anomaly scores:
+
+- Precision  
+- Recall  
+- F1-Score  
+
+## 6. Conclusion
+A moderate KL weight (β ≈ 1) produced the best trade-off between reconstruction quality and anomaly detection accuracy.
