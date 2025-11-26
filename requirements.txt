@@ -1,0 +1,12 @@
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+torch
+torchvision
+tqdm
+
+
+# optional (for nice CLI):
+argparse
